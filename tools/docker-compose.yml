@@ -1,6 +1,24 @@
 version: '3.8'
 
 services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: collab-editor-postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: synccode_user
+      POSTGRES_PASSWORD: synccode_dev_password
+      POSTGRES_DB: synccode_dev
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U synccode_user -d synccode_dev"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+
   redis:
     image: redis:7-alpine
     container_name: collab-editor-redis
@@ -17,5 +35,7 @@ services:
     restart: unless-stopped
 
 volumes:
+  postgres_data:
+    driver: local
   redis_data:
     driver: local

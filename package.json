@@ -12,7 +12,11 @@
     "clean": "yarn workspaces run clean"
   },
   "devDependencies": {
+    "@types/pg": "^8",
     "concurrently": "^7.6.0",
     "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "pg": "^8.16.3"
   }
 }
