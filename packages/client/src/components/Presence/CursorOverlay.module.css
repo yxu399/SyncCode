@@ -1,0 +1,19 @@
+/**
+ * CursorOverlay Styles
+ */
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 100;
+  overflow: hidden;
+}
+
+/* Ensure overlay doesn't interfere with interactions */
+.overlay * {
+  pointer-events: none;
+}

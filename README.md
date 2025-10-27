@@ -5,6 +5,7 @@ A real-time collaborative code editor built with modern web technologies. Edit c
 ## Features
 
 - **Real-time Collaboration** - Multiple users can edit the same document simultaneously
+- **User Presence System** - See who's online with live cursor tracking, typing indicators, and activity status
 - **Version-based Conflict Resolution** - Automatic conflict detection and resolution for concurrent edits
 - **JWT Authentication** - Secure user authentication with access and refresh tokens
 - **Horizontal Scaling** - Scale across multiple server instances with Redis Pub/Sub
@@ -524,6 +525,7 @@ MIT License - see LICENSE file for details
 
 - **Issues**: [GitHub Issues](https://github.com/yourusername/collaborative-editor/issues)
 - **Documentation**: See `docs/` folder for detailed guides
+- **User Presence System**: See `PRESENCE.md`
 - **Monitoring Guide**: See `MONITORING.md`
 - **Conflict Resolution**: See `CONFLICT_RESOLUTION.md`
 - **Redis Pub/Sub**: See `REDIS_PUBSUB.md`

@@ -1,0 +1,83 @@
+/**
+ * CursorIndicator Styles
+ */
+
+.cursorContainer {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1000;
+  transition: top 0.15s ease-out, left 0.15s ease-out;
+  animation: fadeIn 0.2s ease-in;
+}
+
+.cursorPointer {
+  display: block;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+.label {
+  position: absolute;
+  top: 20px;
+  left: 8px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  animation: slideIn 0.2s ease-out;
+  max-width: 150px;
+  overflow: hidden;
+}
+
+.labelText {
+  font-size: 12px;
+  font-weight: 500;
+  color: white;
+  line-height: 1.4;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .cursorContainer {
+    transition: none;
+    animation: none;
+  }
+
+  .label {
+    animation: none;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .label {
+    border: 2px solid white;
+  }
+
+  .cursorPointer {
+    filter: drop-shadow(0 0 0 2px black);
+  }
+}

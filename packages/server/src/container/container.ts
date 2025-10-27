@@ -18,6 +18,8 @@ import { IAuthService } from '../services/interfaces/IAuthService';
 import { AuthService } from '../services/AuthService';
 import { IMetricsService } from '../services/interfaces/IMetricsService';
 import { MetricsService } from '../services/MetricsService';
+import { IPresenceService } from '../services/interfaces/IPresenceService';
+import { PresenceService } from '../services/PresenceService';
 import { SocketController } from '../controllers/SocketController';
 
 export const container = new Container();
@@ -57,6 +59,7 @@ container.bind<IRefreshTokenRepository>(TYPES.RefreshTokenRepository).to(Refresh
 container.bind<IDocumentService>(TYPES.DocumentService).to(DocumentService).inSingletonScope();
 container.bind<IAuthService>(TYPES.AuthService).to(AuthService).inSingletonScope();
 container.bind<IMetricsService>(TYPES.MetricsService).to(MetricsService).inSingletonScope();
+container.bind<IPresenceService>(TYPES.PresenceService).to(PresenceService).inSingletonScope();
 
 // Bind controllers
 container.bind<SocketController>(TYPES.SocketController).to(SocketController).inSingletonScope();

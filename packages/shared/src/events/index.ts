@@ -1,4 +1,4 @@
-import { CursorPosition, UserPresence } from '../types/presence';
+import { CursorPosition, UserPresence, HeartbeatData, StatusUpdateData, ActivityStatus } from '../types/presence';
 import { ConflictError } from '../types/document';
 
 export interface ServerToClientEvents {
@@ -34,6 +34,10 @@ export interface ServerToClientEvents {
   'presence:user-left': (data: { userId: string }) => void;
   'presence:room-update': (data: {
     activeUsers: UserPresence[];
+  }) => void;
+  'presence:status-changed': (data: {
+    userId: string;
+    status: ActivityStatus;
   }) => void;
 
   // Room events
@@ -76,7 +80,12 @@ export interface ClientToServerEvents {
   'presence:update-cursor': (data: {
     roomId: string;
     lineNumber: number;
+    column?: number;
   }) => void;
+
+  'presence:heartbeat': (data: HeartbeatData) => void;
+
+  'presence:update-status': (data: StatusUpdateData) => void;
 }
 
 export interface InterServerEvents {

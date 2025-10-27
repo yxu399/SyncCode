@@ -9,16 +9,24 @@ import {
 import { TYPES } from '../container/types';
 import { IDocumentService } from '../services/interfaces/IDocumentService';
 import { IMetricsService } from '../services/interfaces/IMetricsService';
+import { IPresenceService } from '../services/interfaces/IPresenceService';
 import { DocumentConflictError } from '../services/DocumentService';
+import { PresenceSocketHandler } from '../handlers/PresenceSocketHandler';
 
 type TypedSocket = Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
 
 @injectable()
 export class SocketController {
+  private presenceHandler: PresenceSocketHandler;
+
   constructor(
     @inject(TYPES.DocumentService) private documentService: IDocumentService,
-    @inject(TYPES.MetricsService) private metricsService: IMetricsService
-  ) {}
+    @inject(TYPES.MetricsService) private metricsService: IMetricsService,
+    @inject(TYPES.PresenceService) private presenceService: IPresenceService
+  ) {
+    // Initialize presence handler
+    this.presenceHandler = new PresenceSocketHandler(presenceService, metricsService);
+  }
 
   public setupSocketHandlers(io: SocketIOServer<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>): void {
     io.on('connection', (socket: TypedSocket) => {
@@ -28,26 +36,38 @@ export class SocketController {
       this.metricsService.incrementActiveConnections();
       this.metricsService.trackSocketEvent('connection');
 
+      // Setup presence event handlers for this socket
+      this.presenceHandler.setupHandlers(socket, io);
+
       // Handle room joining
       socket.on('room:join', async (data) => {
         const endTimer = this.metricsService.startSocketEventTimer('room:join');
         this.metricsService.trackSocketEvent('room:join');
         try {
           const { roomId, userId, username } = data;
-          
+
           // Join the socket room
           await socket.join(roomId);
-          
+
           // Store user data in socket
           socket.data.userId = userId;
           socket.data.username = username;
           socket.data.roomId = roomId;
-          
+
           // Get or create document for this room
           const document = await this.documentService.getOrCreateDocument(roomId);
 
           // Track document operation
           this.metricsService.trackDocumentOperation('read');
+
+          // Add user to presence system and get all room users
+          const userPresence = await this.presenceHandler.handleUserJoin(
+            socket,
+            io,
+            roomId,
+            userId,
+            username
+          );
 
           // Send initial document to user
           socket.emit('document:initial-load', {
@@ -55,15 +75,7 @@ export class SocketController {
             version: document.version
           });
 
-          // Notify room of new user
-          socket.to(roomId).emit('presence:user-joined', {
-            userId,
-            username,
-            isActive: true,
-            lastSeen: new Date()
-          });
-
-          console.log(`User ${username} joined room ${roomId}`);
+          console.log(`User ${username} joined room ${roomId} with color ${userPresence.color}`);
           endTimer();
 
         } catch (error) {
@@ -150,31 +162,16 @@ export class SocketController {
         }
       });
 
-      // Handle cursor updates
-      socket.on('presence:update-cursor', (data) => {
-        this.metricsService.trackSocketEvent('presence:update-cursor');
-
-        const { roomId, lineNumber } = data;
-        const userId = socket.data.userId;
-
-        if (userId && socket.data.roomId === roomId) {
-          socket.to(roomId).emit('presence:cursor-moved', {
-            userId,
-            lineNumber,
-            timestamp: Date.now()
-          });
-        }
-      });
-
       // Handle disconnection
-      socket.on('disconnect', () => {
+      socket.on('disconnect', async () => {
         this.metricsService.trackSocketEvent('disconnect');
         this.metricsService.decrementActiveConnections();
 
         const { userId, username, roomId } = socket.data;
 
         if (roomId && userId) {
-          socket.to(roomId).emit('presence:user-left', { userId });
+          // Handle presence cleanup
+          await this.presenceHandler.handleUserLeave(socket, io, roomId, userId, 'disconnect');
           console.log(`User ${username} left room ${roomId}`);
         }
 

@@ -21,6 +21,10 @@ export class MetricsService implements IMetricsService {
   private activeConnectionsGauge: Gauge;
   private activeRoomsGauge: Gauge;
   private documentsInCacheGauge: Gauge;
+  private activeUsersGauge: Gauge;
+  private roomActiveUsersGauge: Gauge;
+  private typingUsersGauge: Gauge;
+  private presenceHeartbeatsCounter: Counter;
 
   // Histograms - distributions of values (latency, size, etc.)
   private httpRequestDuration: Histogram;
@@ -82,6 +86,32 @@ export class MetricsService implements IMetricsService {
     this.documentsInCacheGauge = new Gauge({
       name: 'synccode_documents_in_cache',
       help: 'Current number of documents in Redis cache',
+      registers: [this.registry],
+    });
+
+    this.activeUsersGauge = new Gauge({
+      name: 'synccode_active_users',
+      help: 'Current number of active users across all rooms',
+      registers: [this.registry],
+    });
+
+    this.roomActiveUsersGauge = new Gauge({
+      name: 'synccode_room_active_users',
+      help: 'Current number of active users per room',
+      labelNames: ['room_id'],
+      registers: [this.registry],
+    });
+
+    this.typingUsersGauge = new Gauge({
+      name: 'synccode_typing_users',
+      help: 'Current number of users typing across all rooms',
+      registers: [this.registry],
+    });
+
+    this.presenceHeartbeatsCounter = new Counter({
+      name: 'synccode_presence_heartbeats_total',
+      help: 'Total number of presence heartbeats processed',
+      labelNames: ['status'],
       registers: [this.registry],
     });
 
@@ -170,5 +200,33 @@ export class MetricsService implements IMetricsService {
   startSocketEventTimer(eventType: string): () => void {
     const end = this.socketEventDuration.startTimer({ event_type: eventType });
     return end;
+  }
+
+  /**
+   * Set gauge value for active users across all rooms
+   */
+  setActiveUsers(count: number): void {
+    this.activeUsersGauge.set(count);
+  }
+
+  /**
+   * Set gauge value for active users in a specific room
+   */
+  setRoomActiveUsers(roomId: string, count: number): void {
+    this.roomActiveUsersGauge.set({ room_id: roomId }, count);
+  }
+
+  /**
+   * Set gauge value for typing users across all rooms
+   */
+  setTypingUsers(count: number): void {
+    this.typingUsersGauge.set(count);
+  }
+
+  /**
+   * Track presence heartbeat
+   */
+  trackPresenceHeartbeat(success: boolean): void {
+    this.presenceHeartbeatsCounter.inc({ status: success ? 'success' : 'failure' });
   }
 }

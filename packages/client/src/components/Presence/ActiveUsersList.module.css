@@ -1,0 +1,142 @@
+/**
+ * ActiveUsersList Styles
+ */
+
+.usersList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 100%;
+  padding: 8px 0;
+}
+
+/* Custom scrollbar */
+.usersList::-webkit-scrollbar {
+  width: 8px;
+}
+
+.usersList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.usersList::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.usersList::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Firefox scrollbar */
+.usersList {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+/* Empty state */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  text-align: center;
+  color: #6b7280;
+}
+
+.emptyStateText {
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0 0 8px 0;
+  color: #4b5563;
+}
+
+.emptyStateSubtext {
+  font-size: 14px;
+  margin: 0;
+  color: #9ca3af;
+}
+
+/* User count footer */
+.userCount {
+  position: sticky;
+  bottom: 0;
+  margin-top: 8px;
+  padding: 8px 12px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  background: linear-gradient(to top, white 50%, transparent);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .usersList::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .usersList::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .usersList {
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  }
+
+  .emptyState {
+    color: #9ca3af;
+  }
+
+  .emptyStateText {
+    color: #d1d5db;
+  }
+
+  .emptyStateSubtext {
+    color: #6b7280;
+  }
+
+  .userCount {
+    color: #9ca3af;
+    background: linear-gradient(to top, #1f2937 50%, transparent);
+    border-top-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .usersList {
+    gap: 2px;
+  }
+
+  .emptyState {
+    padding: 24px 12px;
+  }
+
+  .emptyStateText {
+    font-size: 14px;
+  }
+
+  .emptyStateSubtext {
+    font-size: 12px;
+  }
+}
+
+/* Accessibility: High contrast mode */
+@media (prefers-contrast: high) {
+  .userCount {
+    border-top-width: 2px;
+    border-top-color: #000;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .usersList {
+    scroll-behavior: auto;
+  }
+}

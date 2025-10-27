@@ -1,0 +1,153 @@
+/**
+ * UserListItem Styles
+ */
+
+.listItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+  cursor: default;
+  position: relative;
+}
+
+.listItem[role='button'] {
+  cursor: pointer;
+}
+
+.listItem[role='button']:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.listItem[role='button']:active {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.listItem:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: -2px;
+  background-color: rgba(37, 99, 235, 0.1);
+}
+
+.currentUser {
+  background-color: rgba(37, 99, 235, 0.1);
+}
+
+.avatarContainer {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.statusBadge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  background-color: white;
+  border-radius: 50%;
+  padding: 2px;
+}
+
+.userInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.username {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1f2937;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.youBadge {
+  font-size: 11px;
+  font-weight: 600;
+  color: #2563eb;
+  text-transform: uppercase;
+}
+
+.metadata {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.currentLine {
+  font-weight: 500;
+  color: #4b5563;
+}
+
+.currentLine::before {
+  content: '📍';
+  margin-right: 4px;
+}
+
+.lastSeen {
+  opacity: 0.8;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .listItem[role='button']:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .listItem[role='button']:active {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .currentUser {
+    background-color: rgba(37, 99, 235, 0.2);
+  }
+
+  .username {
+    color: #f3f4f6;
+  }
+
+  .currentLine {
+    color: #d1d5db;
+  }
+
+  .metadata {
+    color: #9ca3af;
+  }
+
+  .statusBadge {
+    background-color: #1f2937;
+  }
+}
+
+/* Accessibility: High contrast mode */
+@media (prefers-contrast: high) {
+  .listItem:focus {
+    outline-width: 3px;
+  }
+
+  .username {
+    color: #000;
+  }
+
+  .currentUser {
+    background-color: #e0e7ff;
+    border: 2px solid #2563eb;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .listItem {
+    transition: none;
+  }
+}

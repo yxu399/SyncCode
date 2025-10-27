@@ -1,9 +1,9 @@
 name: Health Check
 
 on:
-  schedule:
-    # Run every 15 minutes
-    - cron: '*/15 * * * *'
+  # schedule:
+  #   # Run every 15 minutes
+  #   - cron: '*/15 * * * *'
   workflow_dispatch:
     inputs:
       environment:
@@ -99,7 +99,7 @@ jobs:
   health-check-production:
     name: Production Health Check
     runs-on: ubuntu-latest
-    if: github.event.inputs.environment == 'production' || github.event.schedule
+    if: github.event.inputs.environment == 'production'
     steps:
       - name: Check API health endpoint
         id: api-health

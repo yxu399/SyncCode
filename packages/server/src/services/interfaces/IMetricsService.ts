@@ -54,4 +54,24 @@ export interface IMetricsService {
    * Returns a function to call when the event processing is complete
    */
   startSocketEventTimer(eventType: string): () => void;
+
+  /**
+   * Set gauge value for active users across all rooms
+   */
+  setActiveUsers(count: number): void;
+
+  /**
+   * Set gauge value for active users in a specific room
+   */
+  setRoomActiveUsers(roomId: string, count: number): void;
+
+  /**
+   * Set gauge value for typing users across all rooms
+   */
+  setTypingUsers(count: number): void;
+
+  /**
+   * Track presence heartbeat
+   */
+  trackPresenceHeartbeat(success: boolean): void;
 }

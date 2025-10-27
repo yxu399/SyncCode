@@ -9,6 +9,7 @@ export const TYPES = {
   DocumentService: Symbol.for('DocumentService'),
   AuthService: Symbol.for('AuthService'),
   MetricsService: Symbol.for('MetricsService'),
+  PresenceService: Symbol.for('PresenceService'),
 
   // Controllers
   SocketController: Symbol.for('SocketController'),
