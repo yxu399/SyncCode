@@ -5,14 +5,14 @@ RUN apk add --no-cache libc6-compat python3 make g++
 
 WORKDIR /app
 
-# Copy package files
+# Copy package files for all workspaces
 COPY package.json yarn.lock .yarnrc.yml ./
 COPY .yarn ./.yarn
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/server/package.json ./packages/server/
 
-# Install dependencies
-RUN yarn workspaces focus @collab/server --production=false
+# Install all dependencies (yarn doesn't support selective workspace installs in nodeLinker mode)
+RUN yarn install --immutable
 
 # Stage 2: Builder
 FROM node:18-alpine AS builder
@@ -47,14 +47,14 @@ RUN apk add --no-cache libc6-compat python3 make g++
 
 WORKDIR /app
 
-# Copy package files
+# Copy package files for all workspaces
 COPY package.json yarn.lock .yarnrc.yml ./
 COPY .yarn ./.yarn
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/server/package.json ./packages/server/
 
 # Install production dependencies only
-RUN yarn workspaces focus @collab/server --production
+RUN yarn install --immutable --production
 
 # Stage 4: Runner
 FROM node:18-alpine AS runner

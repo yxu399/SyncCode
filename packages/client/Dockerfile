@@ -5,14 +5,14 @@ RUN apk add --no-cache libc6-compat
 
 WORKDIR /app
 
-# Copy package files
+# Copy package files for all workspaces
 COPY package.json yarn.lock .yarnrc.yml ./
 COPY .yarn ./.yarn
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/client/package.json ./packages/client/
 
-# Install dependencies
-RUN yarn workspaces focus @collab/client --production=false
+# Install all dependencies (yarn doesn't support selective workspace installs in nodeLinker mode)
+RUN yarn install --immutable
 
 # Stage 2: Builder
 FROM node:18-alpine AS builder

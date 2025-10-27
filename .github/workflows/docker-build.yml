@@ -72,6 +72,7 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build and push Docker image
+        id: docker-build
         uses: docker/build-push-action@v5
         with:
           context: ${{ matrix.context }}
@@ -88,6 +89,8 @@ jobs:
             VERSION=${{ steps.meta.outputs.version }}
 
       - name: Run Trivy vulnerability scanner
+        id: trivy-scan
+        if: success() && github.event_name != 'pull_request'
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-${{ matrix.target }}:${{ steps.meta.outputs.version }}
@@ -97,14 +100,14 @@ jobs:
 
       - name: Upload Trivy results to GitHub Security
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: success() && steps.trivy-scan.outcome == 'success'
         with:
           sarif_file: 'trivy-results-${{ matrix.target }}.sarif'
           category: trivy-${{ matrix.target }}
 
       - name: Run Grype vulnerability scanner
         uses: anchore/scan-action@v3
-        if: github.event_name != 'pull_request'
+        if: success() && github.event_name != 'pull_request'
         with:
           image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-${{ matrix.target }}:${{ steps.meta.outputs.version }}
           fail-build: false
@@ -112,7 +115,7 @@ jobs:
 
       - name: Generate SBOM
         uses: anchore/sbom-action@v0
-        if: github.event_name != 'pull_request'
+        if: success() && github.event_name != 'pull_request'
         with:
           image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-${{ matrix.target }}:${{ steps.meta.outputs.version }}
           format: spdx-json
