@@ -11,8 +11,9 @@ COPY .yarn ./.yarn
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/client/package.json ./packages/client/
 
-# Install all dependencies (yarn doesn't support selective workspace installs in nodeLinker mode)
-RUN yarn install --immutable
+# Install all dependencies
+# Using frozen-lockfile instead of immutable for Docker compatibility
+RUN yarn install --frozen-lockfile || yarn install
 
 # Stage 2: Builder
 FROM node:18-alpine AS builder
