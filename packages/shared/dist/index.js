@@ -17,7 +17,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // Types
 __exportStar(require("./types/document"), exports);
 __exportStar(require("./types/presence"), exports);
+__exportStar(require("./types/user"), exports);
 __exportStar(require("./types/room"), exports);
+__exportStar(require("./types/auth"), exports);
 // Events
 __exportStar(require("./events"), exports);
 // Utils (we'll add these later)

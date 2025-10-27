@@ -1,4 +1,5 @@
 import { CursorPosition, UserPresence } from '../types/presence';
+import { ConflictError } from '../types/document';
 export interface ServerToClientEvents {
     'document:line-updated': (data: {
         lineNumber: number;
@@ -9,6 +10,17 @@ export interface ServerToClientEvents {
     'document:initial-load': (data: {
         content: string[];
         version: number;
+    }) => void;
+    'document:conflict-detected': (data: {
+        conflict: ConflictError;
+        currentDocument: {
+            content: string[];
+            version: number;
+        };
+    }) => void;
+    'document:sync-required': (data: {
+        reason: string;
+        currentVersion: number;
     }) => void;
     'presence:cursor-moved': (data: CursorPosition) => void;
     'presence:user-joined': (data: UserPresence) => void;
@@ -40,6 +52,7 @@ export interface ClientToServerEvents {
         roomId: string;
         lineNumber: number;
         content: string;
+        clientVersion: number;
     }) => void;
     'document:request-sync': (data: {
         roomId: string;

@@ -10,11 +10,24 @@ export interface LineEdit {
     content: string;
     userId: string;
     timestamp: number;
+    clientVersion?: number;
 }
 export interface DocumentVersion {
     documentId: string;
     version: number;
     changes: LineEdit[];
     timestamp: Date;
+}
+export interface ConflictError {
+    type: 'version_conflict';
+    message: string;
+    clientVersion: number;
+    serverVersion: number;
+    conflictingEdit: LineEdit;
+}
+export interface ConflictResolution {
+    strategy: 'last-write-wins' | 'merge' | 'manual';
+    resolvedContent: string[];
+    version: number;
 }
 //# sourceMappingURL=document.d.ts.map

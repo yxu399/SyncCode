@@ -1,4 +1,5 @@
 import { CursorPosition, UserPresence } from '../types/presence';
+import { ConflictError } from '../types/document';
 
 export interface ServerToClientEvents {
   // Document events
@@ -8,12 +9,25 @@ export interface ServerToClientEvents {
     userId: string;
     version: number;
   }) => void;
-  
+
   'document:initial-load': (data: {
     content: string[];
     version: number;
   }) => void;
-  
+
+  'document:conflict-detected': (data: {
+    conflict: ConflictError;
+    currentDocument: {
+      content: string[];
+      version: number;
+    };
+  }) => void;
+
+  'document:sync-required': (data: {
+    reason: string;
+    currentVersion: number;
+  }) => void;
+
   // Presence events
   'presence:cursor-moved': (data: CursorPosition) => void;
   'presence:user-joined': (data: UserPresence) => void;
@@ -21,13 +35,13 @@ export interface ServerToClientEvents {
   'presence:room-update': (data: {
     activeUsers: UserPresence[];
   }) => void;
-  
+
   // Room events
   'room:joined': (data: {
     roomId: string;
     users: UserPresence[];
   }) => void;
-  
+
   'room:error': (data: {
     message: string;
     code: string;
@@ -41,22 +55,23 @@ export interface ClientToServerEvents {
     userId: string;
     username: string;
   }) => void;
-  
+
   'room:leave': (data: {
     roomId: string;
   }) => void;
-  
+
   // Document events
   'document:edit-line': (data: {
     roomId: string;
     lineNumber: number;
     content: string;
+    clientVersion: number; // Version the client has
   }) => void;
-  
+
   'document:request-sync': (data: {
     roomId: string;
   }) => void;
-  
+
   // Presence events
   'presence:update-cursor': (data: {
     roomId: string;

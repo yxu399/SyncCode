@@ -3,9 +3,12 @@ export const TYPES = {
   CacheRepository: Symbol.for('CacheRepository'),
   UserRepository: Symbol.for('UserRepository'),
   RoomRepository: Symbol.for('RoomRepository'),
+  RefreshTokenRepository: Symbol.for('RefreshTokenRepository'),
 
   // Services
   DocumentService: Symbol.for('DocumentService'),
+  AuthService: Symbol.for('AuthService'),
+  MetricsService: Symbol.for('MetricsService'),
 
   // Controllers
   SocketController: Symbol.for('SocketController'),

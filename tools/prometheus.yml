@@ -1,0 +1,44 @@
+# Prometheus configuration for SyncCode monitoring
+global:
+  scrape_interval: 15s       # How frequently to scrape targets
+  evaluation_interval: 15s   # How frequently to evaluate rules
+  external_labels:
+    cluster: 'synccode-dev'
+    replica: 'prometheus-1'
+
+# Scrape configurations
+scrape_configs:
+  # Scrape Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Scrape SyncCode server instances
+  - job_name: 'synccode-server'
+    metrics_path: '/metrics'
+    scrape_interval: 5s       # More frequent scraping for real-time app
+    static_configs:
+      # Docker host network: use host.docker.internal
+      - targets: ['host.docker.internal:5000']
+        labels:
+          instance: 'synccode-server-1'
+          env: 'development'
+
+      # For multi-server setup (uncomment when needed):
+      # - targets: ['host.docker.internal:5001']
+      #   labels:
+      #     instance: 'synccode-server-2'
+      #     env: 'development'
+      #
+      # - targets: ['host.docker.internal:5002']
+      #   labels:
+      #     instance: 'synccode-server-3'
+      #     env: 'development'
+
+  # Scrape Node.js default metrics
+  - job_name: 'node-exporter'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['host.docker.internal:5000']
+        labels:
+          service: 'nodejs'
