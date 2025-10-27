@@ -1,6 +1,6 @@
 # Multi-stage build for SyncCode Client
 # Stage 1: Dependencies
-FROM node:18-alpine AS deps
+FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat
 
 WORKDIR /app
@@ -16,7 +16,7 @@ COPY packages/client/package.json ./packages/client/
 RUN yarn install --frozen-lockfile || yarn install
 
 # Stage 2: Builder
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 

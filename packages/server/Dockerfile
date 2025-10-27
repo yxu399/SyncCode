@@ -1,6 +1,6 @@
 # Multi-stage build for SyncCode Server
 # Stage 1: Dependencies
-FROM node:18-alpine AS deps
+FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat python3 make g++
 
 WORKDIR /app
@@ -16,7 +16,7 @@ COPY packages/server/package.json ./packages/server/
 RUN yarn install --frozen-lockfile || yarn install
 
 # Stage 2: Builder
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
@@ -43,7 +43,7 @@ RUN yarn build
 RUN npx prisma generate
 
 # Stage 3: Production dependencies
-FROM node:18-alpine AS prod-deps
+FROM node:20-alpine AS prod-deps
 RUN apk add --no-cache libc6-compat python3 make g++
 
 WORKDIR /app
@@ -59,7 +59,7 @@ COPY packages/server/package.json ./packages/server/
 RUN yarn install --frozen-lockfile --production || yarn install --production
 
 # Stage 4: Runner
-FROM node:18-alpine AS runner
+FROM node:20-alpine AS runner
 
 # Install dumb-init for proper signal handling
 RUN apk add --no-cache dumb-init
