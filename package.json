@@ -9,11 +9,32 @@
     "dev": "concurrently \"yarn workspace @collab/server dev\" \"yarn workspace @collab/client dev\"",
     "build": "yarn workspaces run build",
     "test": "yarn workspaces run test",
-    "clean": "yarn workspaces run clean"
+    "clean": "./scripts/clean.sh",
+    "setup": "./scripts/setup-dev.sh",
+    "docker:build:server": "docker build -f packages/server/Dockerfile -t synccode-server .",
+    "docker:build:client": "docker build -f packages/client/Dockerfile -t synccode-client .",
+    "docker:build": "yarn docker:build:server && yarn docker:build:client",
+    "docker:up": "cd tools && docker-compose up -d",
+    "docker:down": "cd tools && docker-compose down",
+    "docker:logs": "cd tools && docker-compose logs -f",
+    "db:migrate": "cd packages/server && npx prisma migrate dev",
+    "db:migrate:deploy": "cd packages/server && npx prisma migrate deploy",
+    "db:studio": "cd packages/server && npx prisma studio",
+    "db:reset": "cd packages/server && npx prisma migrate reset",
+    "typecheck": "yarn workspaces run build && cd packages/server && npx tsc --noEmit && cd ../client && npx tsc --noEmit",
+    "lint:check": "echo 'Add linting configuration to enable this script'",
+    "format:check": "echo 'Add formatting configuration to enable this script'",
+    "ci": "yarn typecheck && yarn build && yarn test"
   },
   "devDependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/exec": "^6.0.3",
     "@types/pg": "^8",
     "concurrently": "^7.6.0",
+    "conventional-changelog-conventionalcommits": "^7.0.2",
+    "semantic-release": "^23.0.0",
+    "socket.io-client": "^4.8.1",
     "typescript": "^5.0.0"
   },
   "dependencies": {

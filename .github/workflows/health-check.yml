@@ -1,0 +1,262 @@
+name: Health Check
+
+on:
+  schedule:
+    # Run every 15 minutes
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to check'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  STAGING_API_URL: https://staging-api.synccode.example.com
+  STAGING_CLIENT_URL: https://staging.synccode.example.com
+  PRODUCTION_API_URL: https://api.synccode.example.com
+  PRODUCTION_CLIENT_URL: https://synccode.example.com
+
+jobs:
+  health-check-staging:
+    name: Staging Health Check
+    runs-on: ubuntu-latest
+    if: github.event.inputs.environment == 'staging' || github.event.inputs.environment == '' || !github.event.inputs.environment
+    steps:
+      - name: Check API health endpoint
+        id: api-health
+        continue-on-error: true
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" ${{ env.STAGING_API_URL }}/health)
+          echo "response_code=$response" >> $GITHUB_OUTPUT
+
+          if [ "$response" == "200" ]; then
+            echo "✅ API health check passed"
+            exit 0
+          else
+            echo "❌ API health check failed with status: $response"
+            exit 1
+          fi
+
+      - name: Check client health endpoint
+        id: client-health
+        continue-on-error: true
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" ${{ env.STAGING_CLIENT_URL }}/health)
+          echo "response_code=$response" >> $GITHUB_OUTPUT
+
+          if [ "$response" == "200" ]; then
+            echo "✅ Client health check passed"
+            exit 0
+          else
+            echo "❌ Client health check failed with status: $response"
+            exit 1
+          fi
+
+      - name: Check WebSocket connectivity
+        continue-on-error: true
+        run: |
+          # Simple WebSocket connectivity test
+          echo "Testing WebSocket connection..."
+          # Add WebSocket test logic here
+
+      - name: Check database connectivity
+        continue-on-error: true
+        run: |
+          # Test database connectivity through API
+          response=$(curl -s ${{ env.STAGING_API_URL }}/health/db)
+          echo "Database health: $response"
+
+      - name: Alert on failure
+        if: steps.api-health.outcome == 'failure' || steps.client-health.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = '🚨 Staging Health Check Failed';
+            const body = `
+            ## Health Check Status
+
+            - **API**: ${{ steps.api-health.outcome == 'success' && '✅' || '❌' }} (HTTP ${{ steps.api-health.outputs.response_code }})
+            - **Client**: ${{ steps.client-health.outcome == 'success' && '✅' || '❌' }} (HTTP ${{ steps.client-health.outputs.response_code }})
+
+            **Time**: ${new Date().toISOString()}
+            **Environment**: Staging
+
+            Please investigate immediately.
+            `;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['incident', 'staging', 'health-check']
+            });
+
+  health-check-production:
+    name: Production Health Check
+    runs-on: ubuntu-latest
+    if: github.event.inputs.environment == 'production' || github.event.schedule
+    steps:
+      - name: Check API health endpoint
+        id: api-health
+        continue-on-error: true
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" -m 10 ${{ env.PRODUCTION_API_URL }}/health)
+          echo "response_code=$response" >> $GITHUB_OUTPUT
+
+          if [ "$response" == "200" ]; then
+            echo "✅ API health check passed"
+            exit 0
+          else
+            echo "❌ API health check failed with status: $response"
+            exit 1
+          fi
+
+      - name: Check client health endpoint
+        id: client-health
+        continue-on-error: true
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" -m 10 ${{ env.PRODUCTION_CLIENT_URL }}/health)
+          echo "response_code=$response" >> $GITHUB_OUTPUT
+
+          if [ "$response" == "200" ]; then
+            echo "✅ Client health check passed"
+            exit 0
+          else
+            echo "❌ Client health check failed with status: $response"
+            exit 1
+          fi
+
+      - name: Check response time
+        id: performance
+        continue-on-error: true
+        run: |
+          # Check API response time
+          response_time=$(curl -o /dev/null -s -w '%{time_total}' ${{ env.PRODUCTION_API_URL }}/health)
+          echo "response_time=$response_time" >> $GITHUB_OUTPUT
+
+          # Alert if response time > 2 seconds
+          if (( $(echo "$response_time > 2.0" | bc -l) )); then
+            echo "⚠️ Slow response time: ${response_time}s"
+            exit 1
+          fi
+
+          echo "✅ Response time: ${response_time}s"
+
+      - name: Check Prometheus metrics
+        continue-on-error: true
+        run: |
+          # Query Prometheus for error rates
+          echo "Checking Prometheus metrics..."
+          # Add Prometheus query here
+
+      - name: Alert on critical failure
+        if: steps.api-health.outcome == 'failure' || steps.client-health.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Create high-priority incident issue
+            const title = '🚨 CRITICAL: Production Health Check Failed';
+            const body = `
+            ## ⚠️ PRODUCTION OUTAGE DETECTED ⚠️
+
+            ### Health Check Status
+            - **API**: ${{ steps.api-health.outcome == 'success' && '✅' || '❌ FAILED' }} (HTTP ${{ steps.api-health.outputs.response_code }})
+            - **Client**: ${{ steps.client-health.outcome == 'success' && '✅' || '❌ FAILED' }} (HTTP ${{ steps.client-health.outputs.response_code }})
+            - **Response Time**: ${{ steps.performance.outputs.response_time }}s
+
+            **Detected**: ${new Date().toISOString()}
+            **Environment**: Production
+            **Severity**: P0 - Critical
+
+            ## Immediate Actions Required
+            1. Check AWS ECS service status
+            2. Review CloudWatch logs
+            3. Check database connectivity
+            4. Verify Redis status
+            5. Review recent deployments
+
+            ## Monitoring Links
+            - [Grafana Dashboard](http://localhost:3002)
+            - [Prometheus](http://localhost:9090)
+            - [AWS Console](https://console.aws.amazon.com)
+
+            @team/oncall
+            `;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['incident', 'production', 'p0', 'health-check'],
+              assignees: [] // Add on-call team members
+            });
+
+      - name: Send alert notifications
+        if: steps.api-health.outcome == 'failure' || steps.client-health.outcome == 'failure'
+        run: |
+          # Send Slack alert
+          if [ -n "${{ vars.SLACK_WEBHOOK_URL }}" ]; then
+            curl -X POST ${{ vars.SLACK_WEBHOOK_URL }} \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "text": "🚨 PRODUCTION HEALTH CHECK FAILED",
+                "blocks": [
+                  {
+                    "type": "header",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "🚨 Production Health Check Failed"
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "fields": [
+                      {
+                        "type": "mrkdwn",
+                        "text": "*API Status:*\n${{ steps.api-health.outcome == '\''success'\'' && '\''✅'\'' || '\''❌'\'' }} HTTP ${{ steps.api-health.outputs.response_code }}"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Client Status:*\n${{ steps.client-health.outcome == '\''success'\'' && '\''✅'\'' || '\''❌'\'' }} HTTP ${{ steps.client-health.outputs.response_code }}"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "@channel Immediate attention required!"
+                    }
+                  }
+                ]
+              }'
+          fi
+
+      - name: Trigger auto-healing
+        if: steps.api-health.outcome == 'failure'
+        run: |
+          echo "Health check failed - auto-healing could be triggered here"
+          # Example: Restart ECS service
+          # aws ecs update-service --cluster production --service api --force-new-deployment
+
+  summary:
+    name: Health Check Summary
+    runs-on: ubuntu-latest
+    needs: [health-check-staging, health-check-production]
+    if: always()
+    steps:
+      - name: Generate summary
+        run: |
+          echo "## Health Check Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Time**: $(date -u)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Results" >> $GITHUB_STEP_SUMMARY
+          echo "- Staging: ${{ needs.health-check-staging.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Production: ${{ needs.health-check-production.result }}" >> $GITHUB_STEP_SUMMARY
