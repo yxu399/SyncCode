@@ -165,8 +165,8 @@ jobs:
             ## ⚠️ PRODUCTION OUTAGE DETECTED ⚠️
 
             ### Health Check Status
-            - **API**: ${{ steps.api-health.outcome == 'success' && '✅' || '❌ FAILED' }} (HTTP ${{ steps.api-health.outputs.response_code }})
-            - **Client**: ${{ steps.client-health.outcome == 'success' && '✅' || '❌ FAILED' }} (HTTP ${{ steps.client-health.outputs.response_code }})
+            - **API**: Status=${{ steps.api-health.outcome }}, HTTP=${{ steps.api-health.outputs.response_code }}
+            - **Client**: Status=${{ steps.client-health.outcome }}, HTTP=${{ steps.client-health.outputs.response_code }}
             - **Response Time**: ${{ steps.performance.outputs.response_time }}s
 
             **Detected**: ${new Date().toISOString()}
