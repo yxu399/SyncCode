@@ -79,8 +79,8 @@ jobs:
             const body = `
             ## Health Check Status
 
-            - **API**: ${{ steps.api-health.outcome == 'success' && '✅' || '❌' }} (HTTP ${{ steps.api-health.outputs.response_code }})
-            - **Client**: ${{ steps.client-health.outcome == 'success' && '✅' || '❌' }} (HTTP ${{ steps.client-health.outputs.response_code }})
+            - **API**: Status=${{ steps.api-health.outcome }}, HTTP=${{ steps.api-health.outputs.response_code }}
+            - **Client**: Status=${{ steps.client-health.outcome }}, HTTP=${{ steps.client-health.outputs.response_code }}
 
             **Time**: ${new Date().toISOString()}
             **Environment**: Staging
@@ -219,11 +219,11 @@ jobs:
                     "fields": [
                       {
                         "type": "mrkdwn",
-                        "text": "*API Status:*\n${{ steps.api-health.outcome == '\''success'\'' && '\''✅'\'' || '\''❌'\'' }} HTTP ${{ steps.api-health.outputs.response_code }}"
+                        "text": "*API Status:*\n${{ steps.api-health.outcome }} HTTP ${{ steps.api-health.outputs.response_code }}"
                       },
                       {
                         "type": "mrkdwn",
-                        "text": "*Client Status:*\n${{ steps.client-health.outcome == '\''success'\'' && '\''✅'\'' || '\''❌'\'' }} HTTP ${{ steps.client-health.outputs.response_code }}"
+                        "text": "*Client Status:*\n${{ steps.client-health.outcome }} HTTP ${{ steps.client-health.outputs.response_code }}"
                       }
                     ]
                   },
